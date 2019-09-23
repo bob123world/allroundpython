@@ -1,0 +1,13 @@
+{
+    "db":{
+        "type": "sqlite3",
+        "url": "",
+        "user": "",
+        "password": ""
+    },
+    "trello":{
+        "key": "",
+        "secret": "",
+        "token": ""
+    }
+}
