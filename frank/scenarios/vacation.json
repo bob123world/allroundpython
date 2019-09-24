@@ -1,0 +1,29 @@
+{
+    "frank":
+    {
+        "trigger": "vacation",
+        "description": "vacation_name"
+    },
+    "new_board":
+    {
+        "name": "vacation_name",
+        "lists": 
+        [
+            {
+                "name": "information",
+                "cards": 
+                [
+                    {
+                        "name": "links"
+                    },
+                    {
+                        "name": "departure"
+                    },
+                    {
+                        "name": ""
+                    }
+                ]
+            }
+        ]
+    }
+}
