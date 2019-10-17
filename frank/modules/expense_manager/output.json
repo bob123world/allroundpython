@@ -1,0 +1,19 @@
+{
+    "name":"expense_note",
+    "created": "date",
+    "expenses":
+    [
+        {
+            "seller": "seller-name",
+            "country": "BEL",
+            "cost": -400,
+            "currency": "EUR"
+        },
+        {
+            "seller": "seller1-name",
+            "country": "BEL",
+            "cost": -250.22,
+            "currency": "EUR"
+        }
+    ]
+}
