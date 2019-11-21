@@ -15,5 +15,8 @@ for dir_path, dir_names, file_names in os.walk(config["root"]):
             #     os.remove(path)
             # else:
             #     print("Unable to delete: " + path)
+        if "DESKTOP" in file:
+            path = os.path.join(dir_path, file)
+            print(path)
         
 print("amount of file scanned: " + str(count))
