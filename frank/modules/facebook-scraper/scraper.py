@@ -38,7 +38,73 @@ firefox_profile_path = "/home/zeryx/.mozilla/firefox/0n8gmjoz.bot"
 facebook_https_prefix = "https://"
 
 
-CHROMEDRIVER_BINARIES_FOLDER = "bin"
+CHROMEDRIVER_BINARIES_FOLDER = "frank/modules/facebook-scraper/chromedriver"
+
+# -------------------------------------------------------------
+# -------------------------------------------------------------
+
+
+def check_height():
+    new_height = driver.execute_script("return document.body.scrollHeight")
+    return new_height != old_height
+
+
+# -------------------------------------------------------------
+# -------------------------------------------------------------
+
+# helper function: used to scroll the page
+def scroll():
+    global old_height
+    current_scrolls = 0
+
+    while True:
+        try:
+            if current_scrolls == total_scrolls:
+                return
+
+            old_height = driver.execute_script("return document.body.scrollHeight")
+            driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+            WebDriverWait(driver, scroll_time, 0.05).until(
+                lambda driver: check_height()
+            )
+            current_scrolls += 1
+        except TimeoutException:
+            break
+
+    return
+
+# -----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
+
+
+def create_original_link(url):
+    if url.find(".php") != -1:
+        original_link = facebook_https_prefix + ".facebook.com/" + ((url.split("="))[1])
+
+        if original_link.find("&") != -1:
+            original_link = original_link.split("&")[0]
+
+    elif url.find("fnr_t") != -1:
+        original_link = (
+            facebook_https_prefix
+            + ".facebook.com/"
+            + ((url.split("/"))[-1].split("?")[0])
+        )
+    elif url.find("_tab") != -1:
+        original_link = (
+            facebook_https_prefix
+            + ".facebook.com/"
+            + (url.split("?")[0]).split("/")[-1]
+        )
+    else:
+        original_link = url
+
+    return original_link
+
+
+# -------------------------------------------------------------
+# -------------------------------------------------------------
+
 
 def save_to_file(name, elements, status, current_section):
     """helper function used to save links to files"""
@@ -210,93 +276,94 @@ def create_folder(folder):
         os.mkdir(folder)
 
 
-def scrap_profile(ids):
+def scrape_profile(url):
     folder = os.path.join(os.getcwd(), "data")
     create_folder(folder)
     os.chdir(folder)
 
     # execute for all profiles given in input.txt file
-    for user_id in ids:
+    driver.get(url)
+    url = driver.current_url
+    user_id = create_original_link(url)
 
-        driver.get(user_id)
-        url = driver.current_url
-        user_id = create_original_link(url)
+    print("\nScraping:", user_id)
 
-        print("\nScraping:", user_id)
+    try:
+        target_dir = os.path.join(folder, user_id.split("/")[-1])
+        create_folder(target_dir)
+        os.chdir(target_dir)
+    except Exception:
+        print("Some error occurred in creating the profile directory.")
 
-        try:
-            target_dir = os.path.join(folder, user_id.split("/")[-1])
-            create_folder(target_dir)
-            os.chdir(target_dir)
-        except Exception:
-            print("Some error occurred in creating the profile directory.")
-            continue
+    # ----------------------------------------------------------------------------
+    print("----------------------------------------")
+    print("Friends..")
+    # Name, fblink, email, telephone number, birthdate, number of friends, number of mutual friends, living place, work/school
 
-        # ----------------------------------------------------------------------------
-        print("----------------------------------------")
-        print("Friends..")
-        # setting parameters for scrape_data() to scrape friends
-        scan_list = [
-            "All"
+    try:
+        f = open(os.path.join(folder, "friends.txt"), "w", encoding="utf-8", newline="\r\n")
+
+        driver.get(user_id + "/friends")
+
+        sections_bar = driver.find_element_by_xpath("//*[@class='_3cz'][1]/div[2]/div[1]")
+        scroll()
+
+        elements = driver.find_element_by_xpath("//*[contains(@id,'pagelet_timeline_medley_friends')][1]/div[2]/div/ul/li/div/a")
+
+        results = []
+
+        results = [x.get_attribute("href") for x in elements]
+        results = [create_original_link(x) for x in results]
+
+        # get names of friends
+        people_names = [
+            x.find_element_by_tag_name("img").get_attribute("aria-label")
+            for x in elements
         ]
-        section = [
-            "/friends"
-        ]
-        elements_path = [
-            "//*[contains(@id,'pagelet_timeline_medley_friends')][1]/div[2]/div/ul/li/div/a"
-        ]
-        file_names = [
-            "All Friends.txt"
-        ]
-        save_status = 0
 
-        scrape_data(user_id, scan_list, section, elements_path, save_status, file_names)
+        for i, _ in enumerate(results):
+            # friend's profile link
+            f.writelines(people_names[i])
+            f.write(",")
+
+            # friend's name
+            f.writelines(results[i])
+            f.write("\n")
+
         print("Friends Done!")
         print("----------------------------------------")
-        print("About:")
-        # setting parameters for scrape_data() to scrap the about section
-        scan_list = [None] * 7
-        section = [
-            "/about?section=overview",
-            "/about?section=education",
-            "/about?section=living",
-            "/about?section=contact-info",
-            "/about?section=relationship",
-            "/about?section=bio",
-            "/about?section=year-overviews",
-        ]
-        elements_path = [
-            "//*[contains(@id, 'pagelet_timeline_app_collection_')]/ul/li/div/div[2]/div/div"
-        ] * 7
-        file_names = [
-            "Overview.txt",
-            "Work and Education.txt",
-            "Places Lived.txt",
-            "Contact and Basic Info.txt",
-            "Family and Relationships.txt",
-            "Details About.txt",
-            "Life Events.txt",
-        ]
-        save_status = 3
+    # print("About:")
+    # # setting parameters for scrape_data() to scrap the about section
+    # scan_list = [None] * 7
+    # section = [
+    #     "/about?section=overview",
+    #     "/about?section=education",
+    #     "/about?section=living",
+    #     "/about?section=contact-info",
+    #     "/about?section=relationship",
+    #     "/about?section=bio",
+    #     "/about?section=year-overviews",
+    # ]
+    # elements_path = [
+    #     "//*[contains(@id, 'pagelet_timeline_app_collection_')]/ul/li/div/div[2]/div/div"
+    # ] * 7
+    # file_names = [
+    #     "Overview.txt",
+    #     "Work and Education.txt",
+    #     "Places Lived.txt",
+    #     "Contact and Basic Info.txt",
+    #     "Family and Relationships.txt",
+    #     "Details About.txt",
+    #     "Life Events.txt",
+    # ]
+    # save_status = 3
 
-        scrape_data(user_id, scan_list, section, elements_path, save_status, file_names)
-        print("About Section Done!")
+    # scrape_data(user_id, scan_list, section, elements_path, save_status, file_names)
+    # print("About Section Done!")
 
-        # ----------------------------------------------------------------------------
-        print("----------------------------------------")
-        print("Posts:")
-        # setting parameters for scrape_data() to scrap posts
-        scan_list = [None]
-        section = []
-        elements_path = ['//div[@class="_5pcb _4b0l _2q8l"]']
+    except Exception as e:
+        print(e)
 
-        file_names = ["Posts.txt"]
-        save_status = 4
-
-        scrape_data(user_id, scan_list, section, elements_path, save_status, file_names)
-        print("Posts(Statuses) Done!")
-        print("----------------------------------------")
-    # ----------------------------------------------------------------------------
 
     print("\nProcess Completed.")
 
@@ -394,30 +461,27 @@ def login(email, password):
 # -----------------------------------------------------------------------------
 
 
-def scrapper(**kwargs):
+def main():
     try:
         ROOT_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
-        with open(os.path.join(ROOT_DIR,"config.json"), "r") as file:
+        with open(os.path.join(ROOT_DIR,"frank","config.json"), "r") as file:
             config = json.load(file)
     except Exception as e:
         print(e)
         exit()
 
     if "facebook" not in config:
-        print("Your email or password is missing. Kindly write them in config.json")
+        print("Your facebook email or password is missing. Kindly write them in config.json")
         exit(1)
+        if "email" not in config["facebook"]:
+            pass
+        if "password" not in config["facebook"]:
+            pass
 
-    ids = ["https://www.facebook.com/michael.deboeure"]
-
-    if len(ids) > 0:
-        print("\nStarting Scraping...")
-
-        login(config["facebook"]["email"], config["facebook"]["password"])
-        scrap_profile(ids)
-        driver.close()
-    else:
-        print("Input file is empty.")
+    login(config["facebook"]["email"], config["facebook"]["password"])
+    scrape_profile(config["facebook"]["url"])
+    driver.close
 
 # -------------------------------------------------------------
 # -------------------------------------------------------------
@@ -425,4 +489,4 @@ def scrapper(**kwargs):
 
 if __name__ == "__main__":
     # get things rolling
-    scrapper()
+    main()
