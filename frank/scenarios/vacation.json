@@ -2,28 +2,116 @@
     "frank":
     {
         "trigger": "vacation",
-        "description": "vacation_name"
+        "list": "create",
+        "description": "vacation_name",
+        "next_taks": "question_list_vacation"
     },
-    "new_board":
+    "question_list_vacation":
     {
-        "name": "vacation_name",
-        "lists": 
-        [
+        "connector": {
+            "name": "trello",
+            "board": "FRANK",
+            "create list": "vacation_name"
+        },
+        "cards": [
             {
-                "name": "information",
-                "cards": 
-                [
+                "title": "Destinations",
+                "checklists":[
                     {
-                        "name": "links"
+                        "title": "Add Destinations",
+                        "items":[
+                        ]
+                    }
+                ]
+                
+            },
+            {
+                "title": "Dates",
+                "comments":[
+                    {
+                        "comment": "Start Date: DD-MM-YYYY"
                     },
                     {
-                        "name": "departure"
+                        "comment": "End Date: DD-MM-YYYY"
+                    }
+                ]
+            },
+            {
+                "title": "Transportation",
+                "checklists":[
+                    {
+                        "title": "Modes",
+                        "items":[
+                            {
+                                "content":"Plane",
+                                "checked": false
+                            },
+                            {
+                                "content":"Car",
+                                "checked": false
+                            },
+                            {
+                                "content":"Bike",
+                                "checked": false
+                            },
+                            {
+                                "content":"Train",
+                                "checked": false
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "title": "Travelers",
+                "checklists":[
+                    {
+                        "title": "Travelers",
+                        "items":[
+                            {
+                                "content":"Michael Deboeure",
+                                "checked": false
+                            }
+                        ]
                     },
                     {
-                        "name": ""
+                        "title": "Stakeholders",
+                        "items":[
+                            {
+                                "content":"Michael Deboeure",
+                                "checked": false
+                            },
+                            {
+                                "content":"Luc Deboeure",
+                                "checked": false
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "title": "Ready?",
+                "checklists":[
+                    {
+                        "title": "Check ok to continue creation",
+                        "items":[
+                            {
+                                "content":"ok",
+                                "checked": false
+                            }
+                        ]
                     }
                 ]
             }
+        ],
+        "next_trigger":[
+            {
+                "connector": {
+                    "name": "trello",
+                    "board": "FRANK"
+                }
+            }
         ]
+
     }
 }

@@ -1,11 +1,8 @@
-import json
-import os
-from datetime import datetime, timedelta
-
 from celery import Celery
 
-# app = Celery('tasks', broker='amqp://192.168.99.100:32769')
-app = Celery('tasks', broker='pyamqp://guest@localhost//')
+# docker run -d --hostname my-rabbit --name some-rabbit -p 15672:15672 -p 5672:5672 rabbitmq:3-management
+
+app = Celery('tasks', broker='pyamqp://guest@localhost')
 
 @app.task
 def add(x, y):

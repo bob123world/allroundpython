@@ -9,5 +9,9 @@
         "key": "",
         "secret": "",
         "token": ""
+    },
+    "facebook":{
+        "email": "",
+        "password": ""
     }
 }
