@@ -1,0 +1,11 @@
+{
+    "example": {
+        "url": "https://www.google.be/"
+    },
+    "facebook":{
+        "email": "",
+        "password": "",
+        "url": "",
+        "friends": "//*[contains(@id,'pagelet_timeline_medley_friends')][1]/div[2]/div/ul/li/div/a" 
+    }
+}
