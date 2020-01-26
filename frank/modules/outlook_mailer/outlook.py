@@ -8,8 +8,8 @@ import json
 import time
 
 # Client ID and secret
-client_id = 'e8f4dbda-ae98-4d20-9165-ecd6681c7fa2E'
-client_secret = 'C7ZlW@PmXsemCByQhKlwu1eEwFt17:-?'
+client_id = ''
+client_secret = ''
 
 account = Account(credentials=(client_id, client_secret))
 result = account.authenticate(scopes=['basic', 'message_all'])  # request a token for this scopes

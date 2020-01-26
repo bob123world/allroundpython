@@ -125,3 +125,5 @@ dmypy.json
 
 frank/config.json
 scrapers/config.json
+frank/connectors/google-tasks-connector/credentials.json
+token.pickle
