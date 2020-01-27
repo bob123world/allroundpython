@@ -5,6 +5,122 @@ from googleapiclient.discovery import build
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
 
+# ### TASKSLISTS
+# # Overview Structure
+# {
+#   "kind": "tasks#taskList",
+#   "id": string,
+#   "etag": string,
+#   "title": string,
+#   "updated": datetime,
+#   "selfLink": string
+# }
+
+# # List
+# tasklists = service.tasklists().list().execute()
+
+# for tasklist in tasklists['items']:
+#     print tasklist['title']
+
+# # Get
+# tasklist = service.tasklists().get(tasklist='tasklistID').execute()
+
+# print tasklist['title']
+
+# # Insert
+# tasklist = {
+#   'title': 'New Task List'
+#   }
+
+# result = service.tasklists().insert(body=tasklist).execute()
+# print result['id']
+
+# # Update
+# # First retrieve the tasklist to update.
+# tasklist = service.tasklists().get(tasklist='taskListID').execute()
+# tasklist['title'] = 'New Task List Name'
+
+# result = service.tasklists().update(tasklist=tasklist['id'], body=tasklist).execute()
+# print result['title']
+
+# # Delete
+# service.tasklists().delete(tasklist='taskListID').execute()
+
+# ### TASKS
+# # Overview Structure
+# {
+#   "kind": "tasks#task",
+#   "id": string,
+#   "etag": etag,
+#   "title": string,
+#   "updated": datetime,
+#   "selfLink": string,
+#   "parent": string,
+#   "position": string,
+#   "notes": string,
+#   "status": string,
+#   "due": datetime,
+#   "completed": datetime,
+#   "deleted": boolean,
+#   "hidden": boolean,
+#   "links": [
+#     {
+#       "type": string,
+#       "description": string,
+#       "link": string
+#     }
+#   ]
+# }
+
+# # List 
+# tasks = service.tasks().list(tasklist='@default').execute()
+
+# for task in tasks['items']:
+#   print task['title']
+
+# # List Response
+# {
+#   "kind": "tasks#tasks",
+#   "etag": string,
+#   "nextPageToken": string,
+#   "items": [
+#     tasks Resource
+#   ]
+# }
+
+# # Get
+# task = service.tasks().get(tasklist='@default', task='taskID').execute()
+
+# print task['title']
+
+# # Insert
+# task = {
+#   'title': 'New Task',
+#   'notes': 'Please complete me',
+#   'due': '2010-10-15T12:00:00.000Z'
+#   }
+
+# result = service.tasks().insert(tasklist='@default', body=task).execute()
+# print result['id']
+
+# # Update
+# # First retrieve the task to update.
+# task = service.tasks().get(tasklist='@default', task='taskID').execute()
+# task['status'] = 'completed'
+
+# result = service.tasks().update(tasklist='@default', task=task['id'], body=task).execute()
+# # Print the completed date.
+# print result['completed']
+
+# # Delete
+# service.tasks().delete(tasklist='@default', task='taskID').execute()
+
+# # Clear
+# service.tasks().clear(tasklist='taskListID').execute()
+
+# # Move
+# service.tasks().clear(tasklist='taskListID').execute()
+
 # If modifying these scopes, delete the file token.pickle.
 SCOPES = ['https://www.googleapis.com/auth/tasks.readonly']
 
@@ -35,6 +151,8 @@ def main():
     # Call the Tasks API
     results = service.tasklists().list(maxResults=10).execute()
     items = results.get('items', [])
+    
+
 
     if not items:
         print('No task lists found.')
