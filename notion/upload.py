@@ -32,20 +32,37 @@ class Upload:
 
     def compare_and_add_new(self, present_strategies, results):
         for result in results:
+            report, trades = self.calculate_report(result["trades"])
             present = False
             for strategy in present_strategies:
                 if result["strategy"] in strategy:
                     present = True
             if not present:
                 row = self.cv.collection.add_row()
-                row.avg_profit = 0
-                row.buys = 0
-                row.loses = 0
+                row.avg_profit_perc = round(report["avg_profit_%"],7)
+                row.buys = report["buys"]
+                row.loses = report["loss"]
                 row.strategy = result["strategy"]
                 row.title = result["strategy"]
                 row.title_plaintext = result["strategy"]
-                row.total_profit = 0
-                row.wins = 0
+                row.cum_profit_perc = round(report["cum_profit_%"],6)
+                row.total_profit_mc = round(report["total_profit"],6)
+                row.wins = report["wins"]
+                row.rating = ["To Do"]
+
+    def create_detail_page(self, strategy, id, trades):
+        eid = id.replace("-","")
+        page = self.client.get_block("https://www.notion.so/" + strategy + "-" + eid)
+
+        header1 = page.children.add_new(HeaderBlock)
+        header1.set_text("Strategy Information")
+        header2 = page.children.add_new(HeaderBlock)
+        header2.set_text("Review")
+        table = page.children.add_new(CollectionViewBlock)
+
+        collection = client.get_collection(COLLECTION_ID) # get an existing collection
+        cvb = page.children.add_new(CollectionViewBlock, collection=collection)
+        view = cvb.views.add_new(view_type="table")
 
     def calculate_report(self, trades):
         report = {}
@@ -55,7 +72,7 @@ class Upload:
         for trade in trades:
             t_info = {}
             t_info["pair"] = trade[0]
-            t_info["amount"] = trade[1]
+            t_info["percentage"] = trade[1]
             t_info["buy_date"] = trade[2]
             t_info["sell_date"] = trade[3]
             t_info["unknown1"] = trade[4]
@@ -64,8 +81,6 @@ class Upload:
             t_info["sell_price"] = trade[7]
             t_info["unknown2"] = trade[8]
             t_info["reason"] = trade[9]
-            t_info["percentage"] = (t_info["sell_price"] / t_info["buy_price"]) - 1
-            t_info["mc_difference"] = (t_info["amount"] * t_info["sell_price"]) - (t_info["amount"] * t_info["buy_price"])
             trade_info.append(t_info)
 
         report["pairs"] = []
@@ -75,32 +90,38 @@ class Upload:
         report["cum_profit_%"] = 0
         report["duration"] = 0
         for trade in trade_info:
-            if trade["pair"] in report["pairs"]:
-                report["pairs"][trade["pair"]]["buys"] += 1
-                report["pairs"][trade["pair"]]["total_profit"] += trade["mc_difference"]
-                report["pairs"][trade["pair"]]["cum_profit_%"] += trade["percentage"]
-                report["pairs"][trade["pair"]]["duration%"] += trade["duration"]
-                if t_info["mc_difference"] >= 0:
-                    report["pairs"][trade["pair"]]["wins"] += 1
+            present = False
+            for i, rep in enumerate(report["pairs"]):
+                if trade["pair"] in rep["pair"]:
+                    report["pairs"][i]["buys"] += 1
+                    report["pairs"][i]["cum_profit_%"] += trade["percentage"]
+                    report["pairs"][i]["duration"] += trade["duration"]
+                    report["pairs"][i]["profit"] += trade["percentage"] * 0.001
+                    if t_info["percentage"] >= 0:
+                        report["pairs"][i]["wins"] += 1
+                    else:
+                        report["pairs"][i]["loss"] += 1
+                    present = True
+            
+            if not present:
+                info = {}
+                info["pair"] = {}
+                info["buys"] = 1
+                info["cum_profit_%"] = trade["percentage"]
+                info["duration"] = trade["duration"]
+                info["profit"] = trade["percentage"] * 0.0005
+                if trade["percentage"] >= 0:
+                    info["loss"] = 0
+                    info["wins"] = 1
                 else:
-                    report["pairs"][trade["pair"]]["loss"] += 1
-            else:
-                report["pairs"][trade["pair"]] = {}
-                report["pairs"][trade["pair"]]["buys"] = 1
-                report["pairs"][trade["pair"]]["total_profit"] = trade["mc_difference"]
-                report["pairs"][trade["pair"]]["cum_profit_%"] = trade["percentage"]
-                report["pairs"][trade["pair"]]["duration"] = trade["duration"]
-                if t_info["mc_difference"] >= 0:
-                    report["pairs"][trade["pair"]]["loss"] = 0
-                    report["pairs"][trade["pair"]]["wins"] = 1
-                else:
-                    report["pairs"][trade["pair"]]["loss"] = 1
-                    report["pairs"][trade["pair"]]["wins"] = 0
+                    info["loss"] = 1
+                    info["wins"] = 0
+                report["pairs"].append(info)
 
         for rep in report["pairs"]:
             report["wins"] += rep["wins"]
             report["loss"] += rep["loss"]
-            report["total_profit"] += rep["total_profit"]
+            report["total_profit"] += rep["profit"]
             report["cum_profit_%"] += rep["cum_profit_%"]
             report["duration"] += rep["duration"]
 
