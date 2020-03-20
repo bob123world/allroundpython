@@ -49,20 +49,35 @@ class Upload:
                 row.total_profit_mc = round(report["total_profit"],6)
                 row.wins = report["wins"]
                 row.rating = ["To Do"]
+                self.create_detail_page(result["strategy"], row.id, report["pairs"])
 
-    def create_detail_page(self, strategy, id, trades):
+    def create_detail_page(self, strategy, id, pairs_info):
         eid = id.replace("-","")
         page = self.client.get_block("https://www.notion.so/" + strategy + "-" + eid)
 
         header1 = page.children.add_new(HeaderBlock)
-        header1.set_text("Strategy Information")
+        header1.title = "Strategy Information"
         header2 = page.children.add_new(HeaderBlock)
-        header2.set_text("Review")
-        table = page.children.add_new(CollectionViewBlock)
+        header2.title = "Review"
 
-        collection = client.get_collection(COLLECTION_ID) # get an existing collection
+        cv = self.client.get_collection_view(self.config["notion"]["sample"])
+        collection = self.client.get_collection(cv.collection.id) # get an existing collection
         cvb = page.children.add_new(CollectionViewBlock, collection=collection)
         view = cvb.views.add_new(view_type="table")
+
+        for pair in pairs_info:
+            try:
+                row = cvb.collection.add_row()
+                row.pair = pair["pair"]
+                row.buys = pair["buys"]
+                row.wins = pair["wins"]
+                row.loss = pair["loss"]
+                row.avg_profit_perc = pair["avg_profit_%"]
+                row.cum_profit_perc = pair["cum_profit_%"]
+                row.tot_profit_mc = pair["profit"]
+                row.avg_duration = pair["avg_duration"]
+            except Exception as e:
+                print(e)
 
     def calculate_report(self, trades):
         report = {}
@@ -105,11 +120,11 @@ class Upload:
             
             if not present:
                 info = {}
-                info["pair"] = {}
+                info["pair"] = trade["pair"]
                 info["buys"] = 1
                 info["cum_profit_%"] = trade["percentage"]
                 info["duration"] = trade["duration"]
-                info["profit"] = trade["percentage"] * 0.0005
+                info["profit"] = trade["percentage"] * 0.001
                 if trade["percentage"] >= 0:
                     info["loss"] = 0
                     info["wins"] = 1
@@ -124,6 +139,8 @@ class Upload:
             report["total_profit"] += rep["profit"]
             report["cum_profit_%"] += rep["cum_profit_%"]
             report["duration"] += rep["duration"]
+            rep["avg_profit_%"] = rep["cum_profit_%"] / rep["buys"]
+            rep["avg_duration"] = rep["duration"] / rep["buys"]
 
         report["avg_profit"] = report["total_profit"] / report["buys"]
         report["avg_profit_%"] = report["cum_profit_%"] / report["buys"]
