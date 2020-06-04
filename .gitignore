@@ -128,3 +128,7 @@ scrapers/config.json
 frank/connectors/google-tasks-connector/credentials.json
 token.pickle
 notion/config.json
+.vscode/settings.json
+books/config.json
+books/credentials.json
+books/frank-dev-268110-8216fd8dfe48.json
