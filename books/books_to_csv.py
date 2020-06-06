@@ -23,7 +23,15 @@ class CSVCreate():
         self.book_dir = config["book_dir"]
         self.output_csv = config["output_csv"]
 
-        books = self.list_books()
+        books = None
+        if os.path.exists(config["output_csv"]):
+            books = pandas.read_csv(filepath_or_buffer=config["output_csv"], sep=";", header=0)
+            print(books.tail(10))
+            books = self.list_books(books)
+        else:
+            books = self.list_books()
+
+        self.create_csv(books)
 
     def create_csv(self, books_df):
         try:
@@ -32,11 +40,13 @@ class CSVCreate():
         except Exception as e:
             print(e)
 
-    def list_books(self):
+    def list_books(self, books=None):
         files = 0
         folders = 0
         columns = ["Title", "Author", "ISBN","Language","Publish Date", "Addition Date", "Location"]
-        books = pandas.DataFrame(columns=columns)
+        if books is None:
+            books = pandas.DataFrame(columns=columns)
+
         for dir_path, dir_names, file_names in os.walk(self.book_dir):
             files += len(file_names)
             folders += len(dir_names)
@@ -49,35 +59,36 @@ class CSVCreate():
         for dir_path, dir_names, file_names in os.walk(self.book_dir):
             for file in file_names:
                 if file.endswith(".epub"):
-                    try:
-                        book = epub.read_epub(os.path.join(dir_path, file))
-                    except Exception as e:
-                        #print(e)
-                        pass
-                    book_dict = {}
-                    try:
-                        book_dict["Title"] = book.get_metadata('DC', 'title')[0][0]
-                    except:
-                        book_dict["Title"] = "unknown"
-                    try:
-                        book_dict["ISBN"] = book.get_metadata('DC', 'identifier')[0][0]
-                    except:
-                        book_dict["ISBN"] = "unknown"
-                    try:
-                        book_dict["Author"] = book.get_metadata('DC', 'creator')[0][0]
-                    except:
-                        book_dict["Author"] = "unknown"
-                    try:
-                        book_dict["Publish"] = book.get_metadata('DC', 'date')[0][0]
-                    except:
-                        book_dict["Publish"] = "unknown"
-                    try:
-                        book_dict["Language"] = book.get_metadata('DC', 'language')[0][0]
-                    except:
-                        book_dict["Language"] = "UND"
-                    book_dict["Addition Date"] = datetime.now().strftime("%d/%m/%Y")
-                    book_dict["Location"] = str(os.path.join(dir_path, file))
-                    books = books.append(book_dict, ignore_index=True)
+                    if str(os.path.join(dir_path,file)) not in books.Location.values:
+                        try:
+                            book = epub.read_epub(os.path.join(dir_path, file))
+                        except Exception as e:
+                            #print(e)
+                            pass
+                        book_dict = {}
+                        try:
+                            book_dict["Title"] = book.get_metadata('DC', 'title')[0][0]
+                        except:
+                            book_dict["Title"] = "unknown"
+                        try:
+                            book_dict["ISBN"] = book.get_metadata('DC', 'identifier')[0][0]
+                        except:
+                            book_dict["ISBN"] = "unknown"
+                        try:
+                            book_dict["Author"] = book.get_metadata('DC', 'creator')[0][0]
+                        except:
+                            book_dict["Author"] = "unknown"
+                        try:
+                            book_dict["Publish Date"] = book.get_metadata('DC', 'date')[0][0]
+                        except:
+                            book_dict["Publish Date"] = "unknown"
+                        try:
+                            book_dict["Language"] = book.get_metadata('DC', 'language')[0][0]
+                        except:
+                            book_dict["Language"] = "UND"
+                        book_dict["Addition Date"] = datetime.now().strftime("%d/%m/%Y")
+                        book_dict["Location"] = str(os.path.join(dir_path, file))
+                        books = books.append(book_dict, ignore_index=True)
             bar.next()
 
         bar.finish()
