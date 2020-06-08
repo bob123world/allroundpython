@@ -26,7 +26,6 @@ class CSVCreate():
         books = None
         if os.path.exists(config["output_csv"]):
             books = pandas.read_csv(filepath_or_buffer=config["output_csv"], sep=";", header=0)
-            print(books.tail(10))
             books = self.list_books(books)
         else:
             books = self.list_books()
@@ -35,6 +34,7 @@ class CSVCreate():
 
     def create_csv(self, books_df):
         try:
+            books_df = books_df.sort_values(by=["Location"])
             books_df.to_csv(path_or_buf=self.output_csv, sep=";", index=False)
             print("CSV file written to location: " + str(self.output_csv))
         except Exception as e:
