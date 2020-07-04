@@ -1,0 +1,5 @@
+{
+    "music_db":"D:/GIT/allroundpython/music/music_db.db",
+    "music_root": "D:/Muziek",
+    "music_folders": ["Albums"]
+}

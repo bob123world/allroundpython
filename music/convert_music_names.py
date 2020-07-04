@@ -7,8 +7,6 @@ config["root"] = 'C:/Users/admin/Music'
 
 count = 0
 
-
-
 for dir_path, dir_names, file_names in os.walk(config["root"]):
     for file in file_names:
         try:

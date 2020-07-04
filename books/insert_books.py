@@ -91,8 +91,6 @@ class InsertBooks():
         bar.finish()
         return new_folders, existing_folders
 
-
-
     def list_folders(self, directory):
         """Lists the folder names in folder_names for a root directory give by directory"""
         files = 0
