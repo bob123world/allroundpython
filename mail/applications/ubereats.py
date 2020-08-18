@@ -28,7 +28,8 @@ class UberEats():
         """get the code for the promotion"""
         code = None
         try:
-            code = re.search("(?<=<h4 style=\"margin:0; color:#5FB709; font-family:'UberMove-Medium','HelveticaNeue',Helvetica,Arial,sans-serif; font-size:28px; font-weight:normal; line-height:34px; padding:0; padding-bottom:7px; padding-top:7px\">).*(?= <\/h4>)", body)[0]
+            #code = re.search("(?<=<h4 style=\"margin:0; color:#5FB709; font-family:'UberMove-Medium','HelveticaNeue',Helvetica,Arial,sans-serif; font-size:28px; font-weight:normal; line-height:34px; padding:0; padding-bottom:7px; padding-top:7px\">).*(?= <\/h4>)", body)[0]
+            code = re.search("(?<=Promo code: ).*(?= <\/h4>)", body)[0]
         except Exception as e:
             print(e)
         if code is None:
