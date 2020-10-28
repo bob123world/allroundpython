@@ -136,3 +136,5 @@ books/books.csv
 music/music_db.db
 finance/config.json
 mail/config.json
+mail/credentials_1.json
+mail/credentials.json
